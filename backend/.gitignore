@@ -1,0 +1,5 @@
+uploads/*.mp3
+uploads/*.wav
+uploads/*.m4a
+uploads/*.ogg
+uploads/*.flac

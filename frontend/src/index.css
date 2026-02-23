@@ -8,28 +8,132 @@
     }
 
     body {
-        @apply bg-gray-50 text-gray-900 antialiased;
+        background-color: #07070f;
+        color: #e2e2f0;
+        font-family: system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #0d0d1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #2a2a4a;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3a3a6a;
     }
 }
 
 @layer components {
-    .btn-primary {
-        @apply bg-brand-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150;
+
+    /* Glass card */
+    .glass {
+        @apply bg-dark-card border border-dark-border rounded-2xl;
+        backdrop-filter: blur(20px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
     }
 
-    .btn-secondary {
-        @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors duration-150;
+    .glass-hover {
+        @apply glass transition-all duration-200;
     }
 
-    .card {
-        @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+    .glass-hover:hover {
+        border-color: rgba(0, 212, 255, 0.25);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
     }
 
-    .input {
-        @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-400;
+    /* Buttons */
+    .btn-neon {
+        @apply relative px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200;
+        background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 100%);
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
     }
 
-    .badge {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    .btn-neon:hover {
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.5), 0 0 60px rgba(0, 212, 255, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .btn-neon:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-ghost {
+        @apply px-5 py-2.5 rounded-xl font-medium text-sm border border-dark-border text-gray-300 transition-all duration-200;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-ghost:hover {
+        @apply border-neon-cyan/30 text-neon-cyan;
+        background: rgba(0, 212, 255, 0.05);
+    }
+
+    .btn-ghost:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .btn-danger {
+        @apply px-4 py-2 rounded-xl font-medium text-sm border border-red-800/40 text-red-400 transition-all duration-200;
+        background: rgba(255, 0, 60, 0.05);
+    }
+
+    .btn-danger:hover {
+        background: rgba(255, 0, 60, 0.12);
+        @apply border-red-600/50 text-red-300;
+    }
+
+    /* Input */
+    .neon-input {
+        @apply w-full rounded-xl px-4 py-2.5 text-sm text-gray-100 placeholder-gray-600 outline-none transition-all duration-200;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid #1e1e38;
+    }
+
+    .neon-input:focus {
+        border-color: rgba(0, 212, 255, 0.4);
+        box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+    }
+
+    /* Neon text gradient */
+    .text-gradient {
+        background: linear-gradient(135deg, #00D4FF 0%, #8B5CF6 60%, #FF0080 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Progress bar */
+    .neon-progress {
+        @apply w-full rounded-full overflow-hidden;
+        background: rgba(255, 255, 255, 0.06);
+        height: 6px;
+    }
+
+    .neon-progress-bar {
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, #00D4FF, #8B5CF6);
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        transition: width 0.6s ease;
+    }
+
+    /* Badge */
+    .nbadge {
+        @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
     }
 }
