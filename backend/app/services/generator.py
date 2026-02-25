@@ -10,7 +10,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 _client = Groq(api_key=settings.groq_api_key)
-MODEL = "llama-3.1-70b-versatile"
+MODEL = "llama-3.3-70b-versatile"
 
 # Transcript character limits to avoid token overflows
 NOTES_LIMIT = 8000

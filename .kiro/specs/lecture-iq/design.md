@@ -328,7 +328,7 @@ class AudioProcessorService:
 class ContentGeneratorService:
     def __init__(self, groq_api_key: str):
         self.client = Groq(api_key=groq_api_key)
-        self.model = "llama-3.1-70b-versatile"
+        self.model = "llama-3.3-70b-versatile"
     
     def generate_notes(self, transcript: str) -> str:
         """
