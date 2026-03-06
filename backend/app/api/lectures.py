@@ -18,7 +18,9 @@ from app.schemas.lecture import (
     TranscriptData,
 )
 from app.services.storage import storage_service
-from app.tasks.process_lecture import process_lecture_task
+# from app.tasks.process_lecture import process_lecture_task
+from fastapi import BackgroundTasks
+from app.tasks.process_lecture import run_pipeline
 from app.utils.auth import get_current_user
 
 router = APIRouter()
@@ -32,6 +34,7 @@ MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024  # 100 MB
 async def upload_lecture(
     file: UploadFile = File(...),
     title: Optional[str] = Form(None),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -80,7 +83,8 @@ async def upload_lecture(
     db.refresh(lecture)
 
     # ── Queue Celery task ───────────────────────────────────────────────
-    process_lecture_task.delay(lecture_id)
+    # process_lecture_task.delay(lecture_id)
+    background_tasks.add_task(run_pipeline, lecture_id)
     logger.info(
         "Lecture %s uploaded by user %s → %s backend",
         lecture_id, current_user.id, storage_service.get_backend()

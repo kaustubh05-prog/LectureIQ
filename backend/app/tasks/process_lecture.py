@@ -194,3 +194,99 @@ def process_lecture_task(self, lecture_id: str):
                 logger.debug("Cleaned up temp file: %s", tmp_audio_path)
             except Exception:
                 pass
+
+def run_pipeline(lecture_id: str):
+    """
+    Direct callable version for FastAPI BackgroundTasks.
+    Identical logic to the Celery task but runs in a thread pool.
+    """
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_run_pipeline_sync, lecture_id)
+        future.result()  # wait for completion
+
+
+def _run_pipeline_sync(lecture_id: str):
+    """The actual pipeline logic — extracted so both Celery and BackgroundTasks can call it."""
+    db = SessionLocal()
+    tmp_audio_path = None
+    try:
+        lecture = db.query(Lecture).filter(Lecture.id == lecture_id).first()
+        if not lecture:
+            logger.error("Lecture %s not found", lecture_id)
+            return
+
+        logger.info("[%s] ▶ Pipeline started (BackgroundTasks mode)", lecture_id)
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 5)
+
+        tmp_audio_path = storage_service.get_local_path(lecture.s3_key)
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 10)
+
+        result = transcribe_audio(tmp_audio_path)
+        db.add(Transcript(
+            id=str(uuid.uuid4()),
+            lecture_id=lecture_id,
+            full_text=result["full_text"],
+            segments=result["segments"],
+            language=result.get("language", "unknown"),
+        ))
+        if result["segments"]:
+            lecture.duration = int(result["segments"][-1].get("end", 0))
+        db.commit()
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 40)
+
+        full_text = result["full_text"]
+
+        concepts = extract_key_concepts(full_text)
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 50)
+
+        notes_md = generate_notes(full_text)
+        db.add(Note(id=str(uuid.uuid4()), lecture_id=lecture_id,
+                    content=notes_md, key_concepts=concepts))
+        db.commit()
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 65)
+
+        for i, fc in enumerate(generate_flashcards(full_text)):
+            db.add(Flashcard(id=str(uuid.uuid4()), lecture_id=lecture_id,
+                             question=fc["question"], answer=fc["answer"], order=i))
+        db.commit()
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 75)
+
+        for i, mcq in enumerate(generate_mcqs(full_text)):
+            db.add(MCQ(id=str(uuid.uuid4()), lecture_id=lecture_id,
+                       question=mcq["question"], options=mcq["options"],
+                       correct_index=mcq["correct_index"],
+                       explanation=mcq["explanation"], order=i))
+        db.commit()
+        _set_progress(db, lecture, ProcessingStatus.PROCESSING, 85)
+
+        try:
+            for res in get_resources_for_topics(concepts):
+                db.add(Resource(id=str(uuid.uuid4()), lecture_id=lecture_id,
+                                type=res["type"], title=res["title"], url=res["url"],
+                                thumbnail_url=res.get("thumbnail_url"),
+                                topic=res.get("topic"),
+                                relevance_score=res.get("relevance_score", 1.0)))
+            db.commit()
+        except Exception as e:
+            logger.warning("[%s] Resource linking failed (non-fatal): %s", lecture_id, e)
+
+        _set_progress(db, lecture, ProcessingStatus.COMPLETED, 100)
+        logger.info("[%s] ✅ Pipeline complete!", lecture_id)
+
+    except Exception as exc:
+        logger.error("[%s] Pipeline failed: %s", lecture_id, exc, exc_info=True)
+        try:
+            lec = db.query(Lecture).filter(Lecture.id == lecture_id).first()
+            if lec:
+                _set_progress(db, lec, ProcessingStatus.FAILED, 0, error=str(exc))
+        except Exception:
+            pass
+    finally:
+        db.close()
+        if tmp_audio_path and os.path.exists(tmp_audio_path) and \
+                tmp_audio_path.startswith(tempfile.gettempdir()):
+            try:
+                os.unlink(tmp_audio_path)
+            except Exception:
+                pass
