@@ -13,9 +13,9 @@ class Settings(BaseSettings):
     database_url: str
 
     # Redis / Celery
-    redis_url: str
-    celery_broker_url: str
-    celery_result_backend: str
+    redis_url: str = ""
+    celery_broker_url: str = ""
+    celery_result_backend: str = ""
 
     # Storage — AWS S3 OR Supabase Storage (same field names)
     aws_access_key_id: str = ""
