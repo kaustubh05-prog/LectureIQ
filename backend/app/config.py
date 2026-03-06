@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -17,18 +17,19 @@ class Settings(BaseSettings):
     celery_broker_url: str
     celery_result_backend: str
 
-    # AWS S3
-    aws_access_key_id: str
-    aws_secret_access_key: str
+    # Storage — AWS S3 OR Supabase Storage (same field names)
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
     aws_region: str = "ap-south-1"
-    s3_bucket_name: str
+    s3_bucket_name: str = "lectureiq-audio"
+    supabase_url: Optional[str] = None        # ← NEW
 
     # AI Services
     groq_api_key: str
-    youtube_api_key: str
+    youtube_api_key: str = ""
 
-    # Whisper
-    whisper_model: str = "base"
+    # Whisper (kept for reference, not used for local model)
+    whisper_model: str = "whisper-large-v3"
 
     # JWT
     jwt_secret_key: str
@@ -40,7 +41,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> List[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",")]
+        return [o.strip() for o in self.cors_origins.split(",")]
 
     model_config = SettingsConfigDict(
         env_file=".env",
