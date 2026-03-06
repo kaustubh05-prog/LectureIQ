@@ -4,7 +4,7 @@ import tempfile
 import uuid
 from datetime import datetime
 
-from app.celery_app import celery_app
+# from app.celery_app import celery_app
 from app.database import SessionLocal
 from app.models.flashcard import Flashcard
 from app.models.lecture import Lecture, ProcessingStatus
@@ -36,11 +36,11 @@ def _set_progress(db, lecture: Lecture, status: ProcessingStatus, progress: int,
     db.commit()
 
 
-@celery_app.task(
-    bind=True,
-    max_retries=3,
-    name="app.tasks.process_lecture.run",
-)
+# @celery_app.task(
+#     bind=True,
+#     max_retries=3,
+#     name="app.tasks.process_lecture.run",
+# )
 def process_lecture_task(self, lecture_id: str):
     """
     Full processing pipeline:
