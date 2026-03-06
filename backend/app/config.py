@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # Storage — AWS S3 OR Supabase Storage (same field names)
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
-    aws_region: str = "ap-south-1"
+    aws_region: str = "auto"
     s3_bucket_name: str = "lectureiq-audio"
     supabase_url: Optional[str] = None        # ← NEW
 

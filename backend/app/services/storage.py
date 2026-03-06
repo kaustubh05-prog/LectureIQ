@@ -38,7 +38,7 @@ class StorageService:
                 endpoint_url=f"{supabase_url}/storage/v1/s3",
                 aws_access_key_id=settings.aws_access_key_id,
                 aws_secret_access_key=settings.aws_secret_access_key,
-                region_name="ap-south-1",
+                region_name="auto",
             )
             self._bucket = settings.s3_bucket_name
             logger.info("StorageService → Supabase Storage (bucket: %s)", self._bucket)
