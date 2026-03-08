@@ -41,7 +41,8 @@ htmlcov/
 .pytest_cache/
 
 # Docs
-docs/
+docs/PLANNING.md
+docs/TASKS.md
 
 LLM-1_By_Om.mp3
 LLM-1_By_Om.mp4
